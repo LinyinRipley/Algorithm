@@ -33,7 +33,7 @@ Status Push(SqStack &S, SElemType e){
 	return OK;
 }
 
-Status StatckEmpty(SqStack S)
+Status StackEmpty(SqStack S)
 {
 	if(S.top==S.base){ return TRUE;}
 	return ERROR;
@@ -55,7 +55,7 @@ void conversion (int num,  char *result, int system=2){
 		num/=system;
 	}
 
-	while(!StatckEmpty(S))
+	while(!StackEmpty(S))
 	{
 		Pop(S,e);
 		if(e>9){
