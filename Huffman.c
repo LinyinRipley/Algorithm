@@ -1,4 +1,4 @@
-//Dev C++ 5.11
+//Dev-C++ 5.11
 #include<iostream>
 #include<stdlib.h>
 #include<string.h>
