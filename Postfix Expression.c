@@ -1,5 +1,6 @@
 # Algorithm
 //后缀表达式的转换也可以通过树的不同遍历方式进行转换，此处则是通过栈来实现
+//Bug:可以a+b*c+d*e,但是不能a+b*c+(d*e),该代码（）有所情况错漏，还未更改
 
 #include<stdio.h>
 #include<ctype.h>
