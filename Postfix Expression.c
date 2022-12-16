@@ -1,7 +1,5 @@
 # Algorithm
 //后缀表达式的转换也可以通过树的不同遍历方式进行转换，此处则是通过栈来实现
-//Bug:可以a+b*c+d*e,但是不能a+b*c+(d*e),该代码（）有所情况错漏，还未更改
-
 #include<stdio.h>
 #include<ctype.h>
 #include<stdlib.h>
@@ -38,13 +36,14 @@ Status Push(SqStack &S, SElemType e){
 	return OK;
 }
 
-Status Printtop(SqStack &S, SElemType &e){
-  if(S.top==S.base) return ERROR;     //列表为空
-	e=*S.top;  
-	return OK;
+Status PrintTop(SqStack S){ //打印栈顶元素
+	char e;
+  if(S.top==S.base) return NULL;     //列表为空
+	e=*(S.top-1);  //top指向栈顶上的空位
+	return e;
 }
 
-Status StatckEmpty(SqStack S)
+Status StackEmpty(SqStack S)
 {
 	if(S.top==S.base){ return TRUE;}  //为空的时候返回1
 	return ERROR;
@@ -56,82 +55,88 @@ Status Pop(SqStack &S,SElemType &e){
 	return OK;
 }
 
-void Printlast(SqStack &OPND){//倒叙存储到res中
-  char e; char res[20]; 
-  char *p=res;  int n=0;             
-	while(!StatckEmpty(OPND))   //取出字符串 
-	{	
-		Pop(OPND,e);
-		if(e=='('||e==')'){continue;}
-		*p=e;p++;n++;
-	}  
-	for(int i=n-1;i>=0;i--){printf("%c",res[i]);}
-}
-
-//s2为原先的
-Status Judge(char s1,char s2){   //s1--新，s2--原来
-//比较符号的优先级: 1--现在入的级别更高，0--原优先级高取出放入数字栈中
-	if(s1==')'||s1=='(') return -1;  ///special
-	switch (s2){
-	case '+':
-		if(s1!='+'||s1!='-') return 1;
-		else return 0;
-	case '-': 
-		if(s1!='+'||s1!='-') return 1;
-		else return 0;
-	case '*':
-		return 0;
-	case '/':
-		return 0;
-	case'(':
-		return 1;
-//（）放到外面去实现 ，直接跳过但（）里面的优先级另外在排
-	
-	} 
+void Print(SqStack t){
+	SElemType *tem=t.base;
+	printf("栈：");
+	while(t.base!=t.top){
+	    printf("%c",*t.base);
+		t.base++;
+	}t.base=tem;
+	printf("\n");
 }
 
 
-void Change(char *str,SqStack &OPND,SqStack &OPRT){
- //以不同的ASCll码来判断字符
-//决定运算顺序的只有符号，数字都是一样的放入其中
- //按照不同符号的优先级表来进行入栈出栈的比较，+-*/（）%---switchcase，if(优先级后)：交换栈中位置
-	char *p=str;  char opr='0',opd;  
-	while(*p!='#'){
-		if(isalpha(*p)||isdigit(*p)){    //如果是数字或者是字母就放进栈中
-			Push(OPND,*p);opd=*p;p++;
-		}
-		else {
-			if(StatckEmpty(OPRT)){  //为空就直接放入
-				Push(OPRT,*p);opr=*p++; //opr指代原先p后移
-			} 
-			else if(Judge(*p,opr)==1&&Judge(*p,opr)!=-1){ //如果放入的优先级大
-				if(opr=='('){Push(OPRT,*p);opr=*p;p++;continue;}//原来为（就直接存入现在的p
-				opr=*p;++p;//查看后方符号
-				if(*p=='('){Push(OPRT,opr);Push(OPRT,*p);opr='(';}//后面为（将符号与左括号压入栈
-				else {Push(OPND,*p);Push(OPND,opr);Printtop(OPRT,opr);} //放入后面的一个数字 *p!='('||*p!=')'
-				p++;                      //此处opr为字母
-			}
-			else if(Judge(*p,opr)==0){Push(OPND,opr);Pop(OPRT,opr);Push(OPRT,*p);opr=*p;p++;}   //原先符号元素优先级高
-			else if(Judge(*p,opr)==-1){  //-1
-				if(*p==')') 
-				{Pop(OPRT,opr);Push(OPND,opr);Printtop(OPRT,opr);p++;}//两次删除
-				else if(*p=='('){Push(OPRT,*p);opr=*p;p++;}//如果为（，直接存入（
-			}//Judge==-1
-		}
+void Out_All(char *O,int &num,char i){
+	if(i!='(')
+	O[num++]=i;
+	else return;
+}
+
+int Compare(char s1,char s2){ //比较前一个操作符与现在操作符的优先级：原优先--1，后一个优先--0，右括号---2连输出两个（符号+‘（’）
+	if(s2==')')  return 2; //右括号优先级最高直接输出前面且删前一个（
+	if(s2=='(')  return 0; //左括号优先级最低,不出栈，后一个入栈
+	switch(s1){             //1--输出s1且s2入栈， 0--后一个入栈
+		case '+': 
+			if(s2=='+'||s2=='-') return 1; 
+			else return 0;
+		case '-':
+			if(s2=='+'||s2=='-') return 1; 
+			else return 0;
+		case '*':
+			return 1;
+		case '/':
+			return 1;
+		case '(':
+			return 0;
 	}
-	while(!StatckEmpty(OPRT)){Pop(OPRT,opd);Push(OPND,opd);}
 }
 
 
 
 int main(){
-	SqStack OPND,OPRT;//OPND--操作数，OPRT--操作符
-	InitStack(OPND);InitStack(OPRT);
-	char Input[20];
+	SqStack S;
+	InitStack(S);//初始化栈
+	char Input[20]; 
 	while(~scanf("%s",Input))
-	{
-	printf("后缀表达式为：");
-	Change(Input,OPND,OPRT);
-	Printlast(OPND);printf("\n");
-	}
+{	char e;char Output[20];int num=0;
+	char *p=Input;
+	while(*p!='#')   //printf("e:%c---p:%c\n",e,*p);a+b*(c+d*e)+k#
+	{   e=PrintTop(S);
+		if(isalpha(*p)){printf("%c\n",*p);Out_All(Output,num,*p);p++;} //字母直接输出
+		else if(StackEmpty(S)){Push(S,*p);e=PrintTop(S);Print(S);p++;} //第一个操作符直接存入，并将其放入e，e保存上一个
+		else {  //p为操作符且栈不为空
+
+			
+				int choice=Compare(e,*p); //0--不出栈，p入栈；1--top出栈，再入栈；2--清空（...）括号及里面
+				switch(choice){
+				case 0: Push(S,*p);Print(S);
+					p++;	
+					break;
+				case 1:
+					Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);
+					e=PrintTop(S);
+					while(Compare(e,*p))  //直到p的优先级高入栈停止循环，否则将栈顶元素输出
+					{
+						Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);
+						e=PrintTop(S);
+					}
+					Push(S,*p);e=PrintTop(S);Print(S);   //e始终为栈顶元素
+					p++;
+
+					break;
+				case 2:
+					Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);
+				 while(e!='(')
+					{Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);e=PrintTop(S);} //直至（出栈，不进行输出
+				 Pop(S,e);Print(S);e=PrintTop(S); //此时e=（
+					p++;
+					break;
+				
+				}
+			}
+		}
+	while(!StackEmpty(S)) {Pop(S,e);printf("%c\n",e);Output[num++]=e;}
+	Output[num++]='\0';
+	printf("后缀表达式为：%s\n",Output);
+}
 	return 0;}
