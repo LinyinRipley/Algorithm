@@ -126,7 +126,7 @@ int main(){
 					break;
 				case 2:
 					Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);
-				 while(e!='(')
+				 while(e!='('&&!StackEmpty(S))
 					{Pop(S,e);printf("%c\n",e);Out_All(Output,num,e);Print(S);e=PrintTop(S);} //直至（出栈，不进行输出
 				 Pop(S,e);Print(S);e=PrintTop(S); //此时e=（
 					p++;
